@@ -1,6 +1,5 @@
 #include "philo.h"
 
-pthread_mutex_t	mutex;
 
 void	*routine(void *arg)
 {
@@ -10,7 +9,7 @@ void	*routine(void *arg)
 	philo = (t_philo*) arg;
 	while (!philo->died)
 	{
-		pthread_mutex_lock(&mutex);
+		pthread_mutex_lock(&philo->forks);
 		printf("Philosopher %d has taken a fork\n", philo->id);
 		printf("Philosopher %d is eating\n", philo->id);
 		philo->nbr_meal++;
@@ -22,9 +21,9 @@ void	*routine(void *arg)
 		printf("Philosopher %d is sleeping\n", philo->id);
 		usleep(philo->index->time_sleep);
 		printf("Philosopher %d is thinking\n", philo->id);
-		pthread_mutex_unlock(&mutex);
+		pthread_mutex_unlock(&philo->forks);
 	}
-	pthread_mutex_unlock(&mutex);
+	pthread_mutex_unlock(&philo->forks);
 	return TRUE;
 }
 
@@ -34,9 +33,9 @@ int	create_philo(t_table *index)
 	pthread_t	th[index->nbr_philo];
 
 	i = 0;
-	pthread_mutex_init(&mutex, NULL);
 	while (i < index->nbr_philo)
 	{
+		pthread_mutex_init(&index->philo[i].forks, NULL);
 		index->philo[i].index = index;
 		if (pthread_create(&th[i], NULL, &routine, &index->philo[i]) != 0)
 		{
@@ -47,13 +46,14 @@ int	create_philo(t_table *index)
 		i++;
 	}
 	i = 0;
+	// check if the philosopher is dead
 	while (i < index->nbr_philo)
 	{
 		if (pthread_join(th[i], NULL) != 0)
 			return (FALSE);
 		printf("thread %d has finished his execution\n", i);
+		pthread_mutex_destroy(&index->philo[i].forks);
 		i++;
 	}
-	pthread_mutex_destroy(&mutex);
 	return (TRUE);
 }

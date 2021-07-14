@@ -21,6 +21,7 @@ typedef struct 	s_philo
 	int last_meal;
 	int id;
 	int died;
+	pthread_mutex_t	forks;
 	struct	s_table	*index;
 }				t_philo;
 
