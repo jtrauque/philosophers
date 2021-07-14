@@ -5,11 +5,14 @@
 #include <stdlib.h>
 #include <pthread.h>
 #include <stdio.h>
+#include <sys/time.h>
 
 #define TRUE 0
 #define FALSE 1
 
 typedef int	t_bool;
+
+struct	s_table;
 
 typedef struct 	s_philo
 {
@@ -17,6 +20,8 @@ typedef struct 	s_philo
 	int	nbr_meal;
 	int last_meal;
 	int id;
+	int died;
+	struct	s_table	*index;
 }				t_philo;
 
 typedef struct	s_table
@@ -27,7 +32,6 @@ typedef struct	s_table
 	int time_sleep;
 	int *each_eat;
 	int nbr_forks;
-	int died;
 	t_philo	*philo;
 }				t_table;
 

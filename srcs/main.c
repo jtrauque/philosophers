@@ -5,11 +5,20 @@ static int	init_philo(t_table *index)
 	int	i;
 
 	i = 0;
+	index->philo = malloc(sizeof(t_philo) * index->nbr_philo);
+	if (index->philo == NULL)
+		return FALSE;
 	while (i < index->nbr_philo)
 	{
-		index.philo[i]->id
+		index->philo[i].id = i + 1;
+		index->philo[i].nbr_meal = 0;
+		index->philo[i].last_meal = 0;
+		index->philo[i].died = 0;
+		i++;
 	}
+	return TRUE;
 }
+
 static int	init_index(t_table *index, char *argv[])
 {
 	int	i;
@@ -27,6 +36,8 @@ static int	init_index(t_table *index, char *argv[])
 		return (FALSE);
 	while (i < index->nbr_philo)
 	{
+		if (!argv[j])
+			break ;
 		index->each_eat[i] = ft_atoi_philo(argv[j]);
 		if (index->each_eat[i] < 0)
 			return (FALSE);
@@ -61,5 +72,6 @@ int	main(int argc, char *argv[])
 		printf("philo nbr %d eat %d times\n", i + 1, index.each_eat[i]);
 	create_philo(&index);
 	free(index.each_eat);
+	free(index.philo);
 	return (0);	
 }
