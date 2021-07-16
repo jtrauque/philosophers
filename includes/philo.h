@@ -10,6 +10,14 @@
 #define TRUE 0
 #define FALSE 1
 
+
+typedef	enum e_arg
+{
+	EAT = 2,
+	SLEEP,
+	THINK
+}			t_arg;
+
 typedef int	t_bool;
 
 struct	s_table;
@@ -21,7 +29,9 @@ typedef struct 	s_philo
 	int last_meal;
 	int id;
 	int died;
-	pthread_mutex_t	forks;
+	pthread_mutex_t	*left_fork;
+	pthread_mutex_t	*right_fork;
+	pthread_mutex_t	*print;
 	struct	s_table	*index;
 }				t_philo;
 
@@ -31,7 +41,7 @@ typedef struct	s_table
 	int time_eat;
 	int time_die;
 	int time_sleep;
-	int *each_eat;
+	int each_eat;
 	int nbr_forks;
 	t_philo	*philo;
 }				t_table;

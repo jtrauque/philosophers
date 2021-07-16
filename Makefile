@@ -11,7 +11,7 @@ DEP       = ${OBJS:.o=.d}
 
 CC        = gcc
 
-CFLAGS    = -Iincludes -fsanitize=address -g -Wall -Wextra -Werror -lpthread -MMD
+CFLAGS    = -Iincludes -fsanitize=thread -g -Wall -Wextra -Werror -lpthread -MMD
 
 RM        = rm -rf
 
