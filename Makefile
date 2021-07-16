@@ -9,9 +9,9 @@ DIR		  = $(sort $(dir $(OBJS)))
 
 DEP       = ${OBJS:.o=.d}
 
-CC        = gcc
+CC        = clang
 
-CFLAGS    = -Iincludes -fsanitize=thread -g -Wall -Wextra -Werror -lpthread -MMD
+CFLAGS    = -Iincludes -fsanitize=thread -g -Wall -Wextra -Werror -pthread -MMD
 
 RM        = rm -rf
 
