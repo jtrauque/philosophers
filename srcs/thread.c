@@ -10,17 +10,17 @@ void	print(int id, t_philo *philo, int action)
 	}
 	else if (action == SLEEP)
 		printf("Philosopher %d is sleeping\n", id);
-	else 
+	else
 		printf("Philosopher %d is thinking\n", id);
 	pthread_mutex_unlock(philo->print);
 }
 
 void	*routine(void *arg)
 {
-	t_philo	*philo;
-	struct	timeval	current_time;
+	t_philo			*philo;
+	struct timeval	current_time;
 
-	philo = (t_philo*) arg;
+	philo = (t_philo *) arg;
 	while (!philo->died)
 	{
 		pthread_mutex_lock(philo->left_fork);
@@ -38,13 +38,13 @@ void	*routine(void *arg)
 		usleep(philo->index->time_sleep * 1000);
 		print(philo->id, philo, THINK);
 	}
-	return TRUE;
+	return (TRUE);
 }
 
 int	create_philo(t_table *index)
 {
-	int	i;
-	pthread_t	th[index->nbr_philo];
+	int				i;
+	pthread_t		th[index->nbr_philo];
 	pthread_mutex_t	forks[index->nbr_philo];
 	pthread_mutex_t	print_action;
 
@@ -61,9 +61,9 @@ int	create_philo(t_table *index)
 	while (i < index->nbr_philo)
 	{
 		index->philo[i].index = index;
-		if (i == index->nbr_philo)
+		if (i == index->nbr_philo - 1)
 			index->philo[i].left_fork = &forks[0];
-		else 
+		else
 			index->philo[i].left_fork = &forks[i + 1];
 		index->philo[i].right_fork = &forks[i];
 		if (pthread_create(&th[i], NULL, &routine, &index->philo[i]) != 0)

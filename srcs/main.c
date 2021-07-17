@@ -7,7 +7,7 @@ static int	init_philo(t_table *index)
 	i = 0;
 	index->philo = malloc(sizeof(t_philo) * index->nbr_philo);
 	if (index->philo == NULL)
-		return FALSE;
+		return (FALSE);
 	while (i < index->nbr_philo)
 	{
 		index->philo[i].id = i + 1;
@@ -16,7 +16,7 @@ static int	init_philo(t_table *index)
 		index->philo[i].died = 0;
 		i++;
 	}
-	return TRUE;
+	return (TRUE);
 }
 
 static int	init_index(t_table *index, char *argv[], int argc)
@@ -30,10 +30,10 @@ static int	init_index(t_table *index, char *argv[], int argc)
 	index->time_sleep = ft_atoi_philo(argv[j++]);
 	if (argc == 6)
 		index->each_eat = ft_atoi_philo(argv[j++]);
-	else 
+	else
 		index->each_eat = -1;
-	if (index->nbr_philo < 0 || index->time_die < 0 || index->time_eat < 0 
-			|| index->time_sleep < 0 || (argc == 6 && index->each_eat < 0))
+	if (index->nbr_philo < 0 || index->time_die < 0 || index->time_eat < 0
+		|| index->time_sleep < 0 || (argc == 6 && index->each_eat < 0))
 		return (FALSE);
 	init_philo(index);
 	return (TRUE);
@@ -41,12 +41,12 @@ static int	init_index(t_table *index, char *argv[], int argc)
 
 int	main(int argc, char *argv[])
 {
-	t_table index;
+	t_table	index;
 
 	if (argc < 5 || argc > 6)
 	{
 		ft_putstr_fd("please enter the right amount of arguments", 2);
-		return 1;
+		return (1);
 	}
 	if (init_index(&index, argv, argc))
 	{
@@ -58,5 +58,5 @@ int	main(int argc, char *argv[])
 		printf("philo nbr %d eat %d times\n", i + 1, index.each_eat);
 	create_philo(&index);
 	free(index.philo);
-	return (0);	
+	return (0);
 }
