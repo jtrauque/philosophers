@@ -24,6 +24,7 @@ void	*routine(void *arg)
 	{
 		pthread_mutex_lock(philo->right_fork);
 		print(philo->id, philo, FORK);
+		pthread_mutex_unlock(philo->right_fork);
 		pthread_mutex_lock(philo->left_fork);
 		print(philo->id, philo, FORK);
 		print(philo->id, philo, EAT);
@@ -31,14 +32,14 @@ void	*routine(void *arg)
 		gettimeofday(&current_time, NULL);
 		philo->last_meal = current_time.tv_sec;
 		usleep(philo->index->time_eat * 1000);
-		pthread_mutex_unlock(philo->right_fork);
-		pthread_mutex_unlock(philo->left_fork);
 		if (philo->index->each_eat == philo->nbr_meal)
 			break ;
 		print(philo->id, philo, SLEEP);
+		pthread_mutex_unlock(philo->left_fork);
 		usleep(philo->index->time_sleep * 1000);
 		print(philo->id, philo, THINK);
 	}
+	pthread_mutex_unlock(philo->left_fork);
 	return (TRUE);
 }
 
