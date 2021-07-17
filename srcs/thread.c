@@ -3,11 +3,10 @@
 void	print(int id, t_philo *philo, int action)
 {
 	pthread_mutex_lock(philo->print);
-	if (action == EAT)
-	{
+	if (action == FORK)
 		printf("Philosopher %d has taken a fork\n", id);
+	else if (action == EAT)
 		printf("Philosopher %d is eating\n", id);
-	}
 	else if (action == SLEEP)
 		printf("Philosopher %d is sleeping\n", id);
 	else
@@ -23,15 +22,17 @@ void	*routine(void *arg)
 	philo = (t_philo *) arg;
 	while (!philo->died)
 	{
-		pthread_mutex_lock(philo->left_fork);
 		pthread_mutex_lock(philo->right_fork);
+		print(philo->id, philo, FORK);
+		pthread_mutex_lock(philo->left_fork);
+		print(philo->id, philo, FORK);
 		print(philo->id, philo, EAT);
 		philo->nbr_meal++;
 		gettimeofday(&current_time, NULL);
 		philo->last_meal = current_time.tv_sec;
 		usleep(philo->index->time_eat * 1000);
-		pthread_mutex_unlock(philo->left_fork);
 		pthread_mutex_unlock(philo->right_fork);
+		pthread_mutex_unlock(philo->left_fork);
 		if (philo->index->each_eat == philo->nbr_meal)
 			break ;
 		print(philo->id, philo, SLEEP);
@@ -49,7 +50,7 @@ int	create_philo(t_table *index)
 	pthread_mutex_t	print_action;
 
 	i = 0;
-	memset(&th, 0, sizeof(int) * index->nbr_philo);
+	/* memset(&th, 0, sizeof(int) * index->nbr_philo); */
 	pthread_mutex_init(&print_action, NULL);
 	while (i < index->nbr_philo)
 	{

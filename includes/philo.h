@@ -14,7 +14,8 @@
 
 typedef	enum e_arg
 {
-	EAT = 2,
+	FORK = 2,
+	EAT,
 	SLEEP,
 	THINK
 }			t_arg;
@@ -33,6 +34,7 @@ typedef struct 	s_philo
 	pthread_mutex_t	*left_fork;
 	pthread_mutex_t	*right_fork;
 	pthread_mutex_t	*print;
+	pthread_mutex_t	*ready;
 	struct	s_table	*index;
 }				t_philo;
 
