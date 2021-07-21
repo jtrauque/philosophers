@@ -9,37 +9,60 @@ void	print(int id, t_philo *philo, int action)
 		printf("Philosopher %d is eating\n", id);
 	else if (action == SLEEP)
 		printf("Philosopher %d is sleeping\n", id);
-	else
+	else if (action == THINK)
 		printf("Philosopher %d is thinking\n", id);
+	else 
+		printf("Philosopher %d is dead\n", id);
 	pthread_mutex_unlock(philo->print);
+}
+
+int	check_time(void)
+{
+	struct timeval	current_time;
+
+	if (gettimeofday(&current_time, NULL) == -1)
+		return (-1);
+	return ((current_time.tv_sec * 1000) + (current_time.tv_usec / 1000));
 }
 
 void	*routine(void *arg)
 {
 	t_philo			*philo;
-	struct timeval	current_time;
 
 	philo = (t_philo *) arg;
 	while (!philo->died)
 	{
-		pthread_mutex_lock(philo->right_fork);
-		print(philo->id, philo, FORK);
-		pthread_mutex_unlock(philo->right_fork);
-		pthread_mutex_lock(philo->left_fork);
+		print(philo->id, philo, THINK);
+		if (philo->id % 2)
+		{
+			pthread_mutex_lock(philo->right_fork);
+			print(philo->id, philo, FORK);
+			pthread_mutex_lock(philo->left_fork);
+		}
+		else 
+		{
+			pthread_mutex_lock(philo->left_fork);
+			print(philo->id, philo, FORK);
+			pthread_mutex_lock(philo->right_fork);
+		}
 		print(philo->id, philo, FORK);
 		print(philo->id, philo, EAT);
 		philo->nbr_meal++;
-		gettimeofday(&current_time, NULL);
-		philo->last_meal = current_time.tv_sec;
+		philo->last_meal = check_time();
+		printf("time = %d\n", philo->last_meal);
 		usleep(philo->index->time_eat * 1000);
-		if (philo->index->each_eat == philo->nbr_meal)
-			break ;
 		print(philo->id, philo, SLEEP);
 		pthread_mutex_unlock(philo->left_fork);
+		pthread_mutex_unlock(philo->right_fork);
 		usleep(philo->index->time_sleep * 1000);
-		print(philo->id, philo, THINK);
+		/* print(philo->id, philo, THINK); */
+		if (philo->index->each_eat == philo->nbr_meal)
+			break ;
 	}
-	pthread_mutex_unlock(philo->left_fork);
+	while (check_time() - philo->last_meal < philo->index->time_die)
+		;
+	print(philo->id, philo, DEAD);
+	/* philo->index->dead = 1; */
 	return (TRUE);
 }
 

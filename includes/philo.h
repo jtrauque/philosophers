@@ -17,7 +17,8 @@ typedef	enum e_arg
 	FORK = 2,
 	EAT,
 	SLEEP,
-	THINK
+	THINK,
+	DEAD
 }			t_arg;
 
 typedef int	t_bool;
@@ -46,6 +47,7 @@ typedef struct	s_table
 	int time_sleep;
 	int each_eat;
 	int nbr_forks;
+	int dead;
 	t_philo	*philo;
 }				t_table;
 
