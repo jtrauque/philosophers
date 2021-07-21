@@ -25,6 +25,12 @@ typedef int	t_bool;
 
 struct	s_table;
 
+typedef	struct	s_protect
+{
+	pthread_mutex_t	fork;
+	int take;
+}				t_protect;
+
 typedef struct 	s_philo
 {
 	int	is_eating;
@@ -32,8 +38,8 @@ typedef struct 	s_philo
 	int last_meal;
 	int id;
 	int died;
-	pthread_mutex_t	*left_fork;
-	pthread_mutex_t	*right_fork;
+	t_protect	*left_fork;
+	t_protect	right_fork; //fourchette du voisin
 	pthread_mutex_t	*print;
 	pthread_mutex_t	*ready;
 	struct	s_table	*index;

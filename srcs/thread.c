@@ -19,10 +19,51 @@ void	print(int id, t_philo *philo, int action)
 int	check_time(void)
 {
 	struct timeval	current_time;
-
+	static int start_time = 0;
+	// on met une heure de reference (creation de l univers 01/01/1970)
 	if (gettimeofday(&current_time, NULL) == -1)
 		return (-1);
-	return ((current_time.tv_sec * 1000) + (current_time.tv_usec / 1000));
+	if (!start_time)
+		start_time = (current_time.tv_sec * 1000) + (current_time.tv_usec / 1000);
+	return ((current_time.tv_sec * 1000) + (current_time.tv_usec / 1000) - start_time);
+}
+
+int	premission_to_left(t_protect *fork)
+{
+	int ret;
+
+	ret = 0; 
+	pthread_mutex_lock(&fork->fork);
+	if (fork->take == 0)
+	{
+		fork->take = 1;
+		ret = fork->take;
+	}
+	pthread_mutex_unlock(&fork->fork);
+	return (ret);
+}
+
+int	premission_to_right(t_protect *left_fork, t_protect *right_fork)
+{
+	int ret;
+	int plop;
+
+	ret = 0; 
+	pthread_mutex_lock(&right_fork->fork);
+	plop = right_fork->take;
+	if (right_fork->take == 0)
+	{
+		right_fork->take = 1;
+		ret = right_fork->take;
+	}
+	pthread_mutex_unlock(&right_fork->fork);
+	pthread_mutex_lock(&left_fork->fork);
+	if (plop == 1)
+	{
+		left_fork->take = 0;
+	}
+	pthread_mutex_unlock(&left_fork->fork);
+	return (ret);
 }
 
 void	*routine(void *arg)
@@ -32,35 +73,32 @@ void	*routine(void *arg)
 	philo = (t_philo *) arg;
 	while (!philo->died)
 	{
-		print(philo->id, philo, THINK);
-		if (philo->id % 2)
-		{
-			pthread_mutex_lock(philo->right_fork);
-			print(philo->id, philo, FORK);
-			pthread_mutex_lock(philo->left_fork);
-		}
-		else 
-		{
-			pthread_mutex_lock(philo->left_fork);
-			print(philo->id, philo, FORK);
-			pthread_mutex_lock(philo->right_fork);
-		}
+		if (premission_to_left(philo->left_fork) == 0)
+			continue ;
+		if (premission_to_right(philo->left_fork, &philo->right_fork) == 0)
+			continue ;
+		print(philo->id, philo, FORK);
 		print(philo->id, philo, FORK);
 		print(philo->id, philo, EAT);
+		/* pthread_mutex_unlock(philo->right_fork.fork); */
 		philo->nbr_meal++;
 		philo->last_meal = check_time();
 		printf("time = %d\n", philo->last_meal);
 		usleep(philo->index->time_eat * 1000);
 		print(philo->id, philo, SLEEP);
-		pthread_mutex_unlock(philo->left_fork);
-		pthread_mutex_unlock(philo->right_fork);
+		pthread_mutex_lock(&philo->left_fork->fork);
+		philo->left_fork->take = 0;
+		pthread_mutex_unlock(&philo->left_fork->fork);
+		pthread_mutex_lock(&philo->right_fork.fork);
+		philo->right_fork.take = 0;
+		pthread_mutex_unlock(&philo->right_fork.fork);
 		usleep(philo->index->time_sleep * 1000);
-		/* print(philo->id, philo, THINK); */
+		print(philo->id, philo, THINK);
 		if (philo->index->each_eat == philo->nbr_meal)
 			break ;
 	}
-	while (check_time() - philo->last_meal < philo->index->time_die)
-		;
+	/* while (check_time() - philo->last_meal < philo->index->time_die) */
+	/* 	; */
 	print(philo->id, philo, DEAD);
 	/* philo->index->dead = 1; */
 	return (TRUE);
@@ -70,27 +108,28 @@ int	create_philo(t_table *index)
 {
 	int				i;
 	pthread_t		th[index->nbr_philo];
-	pthread_mutex_t	forks[index->nbr_philo];
+	/* pthread_mutex_t	forks[index->nbr_philo]; */
 	pthread_mutex_t	print_action;
 
 	i = 0;
-	/* memset(&th, 0, sizeof(int) * index->nbr_philo); */
 	pthread_mutex_init(&print_action, NULL);
 	while (i < index->nbr_philo)
 	{
-		pthread_mutex_init(&forks[i], NULL);
+		pthread_mutex_init(&index->philo[i].right_fork.fork, NULL);
 		index->philo[i].print = &print_action;
+		index->philo[i].index = index;
+		if (i == index->nbr_philo - 1)
+			index->philo[i].left_fork = &index->philo[0].right_fork;
+		else
+			index->philo[i].left_fork = &index->philo[i + 1].right_fork;
+		// pointeur sur la fourchette du voisin
+		index->philo[i].right_fork.take = 0;
 		i++;
 	}
 	i = 0;
+	check_time();
 	while (i < index->nbr_philo)
 	{
-		index->philo[i].index = index;
-		if (i == index->nbr_philo - 1)
-			index->philo[i].left_fork = &forks[0];
-		else
-			index->philo[i].left_fork = &forks[i + 1];
-		index->philo[i].right_fork = &forks[i];
 		if (pthread_create(&th[i], NULL, &routine, &index->philo[i]) != 0)
 		{
 			ft_putstr_fd("Failed to create thread", 2);
@@ -111,7 +150,7 @@ int	create_philo(t_table *index)
 	i = 0;
 	while (i < index->nbr_philo)
 	{
-		pthread_mutex_destroy(&forks[i]);
+		pthread_mutex_destroy(&index->philo[i].right_fork.fork);
 		i++;
 	}
 	pthread_mutex_destroy(&print_action);
