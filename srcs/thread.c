@@ -66,57 +66,101 @@ int	premission_to_right(t_protect *left_fork, t_protect *right_fork)
 	return (ret);
 }
 
+void	release_fork(t_philo *philo)
+{
+	pthread_mutex_lock(&philo->left_fork->fork);
+	philo->left_fork->take = 0;
+	pthread_mutex_unlock(&philo->left_fork->fork);
+	pthread_mutex_lock(&philo->right_fork.fork);
+	philo->right_fork.take = 0;
+	pthread_mutex_unlock(&philo->right_fork.fork);
+}
+
 void	*routine(void *arg)
 {
 	t_philo			*philo;
 
 	philo = (t_philo *) arg;
-	while (!philo->died)
+	pthread_mutex_lock(philo->ready);
+	while (!philo->index->dead)
 	{
+		pthread_mutex_unlock(philo->ready);
 		if (premission_to_left(philo->left_fork) == 0)
+		{
+			pthread_mutex_lock(philo->ready);
 			continue ;
+		}
 		if (premission_to_right(philo->left_fork, &philo->right_fork) == 0)
+		{
+			pthread_mutex_lock(philo->ready);
 			continue ;
+		}
 		print(philo->id, philo, FORK);
 		print(philo->id, philo, FORK);
+		printf("temps apres derniere repas = %d\n- temps avant de mourrir = %d\n", check_time() - philo->last_meal, philo->index->time_die);
 		print(philo->id, philo, EAT);
-		/* pthread_mutex_unlock(philo->right_fork.fork); */
 		philo->nbr_meal++;
+		pthread_mutex_lock(philo->ready);
 		philo->last_meal = check_time();
+		pthread_mutex_unlock(philo->ready);
 		printf("time = %d\n", philo->last_meal);
 		usleep(philo->index->time_eat * 1000);
 		print(philo->id, philo, SLEEP);
-		pthread_mutex_lock(&philo->left_fork->fork);
-		philo->left_fork->take = 0;
-		pthread_mutex_unlock(&philo->left_fork->fork);
-		pthread_mutex_lock(&philo->right_fork.fork);
-		philo->right_fork.take = 0;
-		pthread_mutex_unlock(&philo->right_fork.fork);
+		release_fork(philo);
 		usleep(philo->index->time_sleep * 1000);
 		print(philo->id, philo, THINK);
-		if (philo->index->each_eat == philo->nbr_meal)
-			break ;
+		pthread_mutex_lock(philo->ready);
 	}
-	/* while (check_time() - philo->last_meal < philo->index->time_die) */
-	/* 	; */
-	print(philo->id, philo, DEAD);
-	/* philo->index->dead = 1; */
+	pthread_mutex_unlock(philo->ready);
 	return (TRUE);
+}
+
+void	check_death(t_table *index, pthread_mutex_t *meal)
+{
+	int	i;
+
+	i = 0;
+	while (!index->allright)
+	{
+		i = 0;
+		while (i < index->nbr_philo && index->dead == 0)
+		{
+			pthread_mutex_lock(meal);
+			if (check_time() - index->philo[i].last_meal > index->time_die)
+			{
+				print(index->philo[i].id, index->philo, DEAD);
+				index->dead = 1;
+			}
+			pthread_mutex_unlock(meal);
+			i++;
+		}
+		if (index->dead)
+			break ;
+		i = 0;
+		pthread_mutex_lock(meal);
+		while (i < index->nbr_philo && index->philo[i].nbr_meal == index->each_eat)	
+			i++;
+		pthread_mutex_unlock(meal);
+		if (i == index->nbr_philo)
+			index->allright = 1;
+	}
 }
 
 int	create_philo(t_table *index)
 {
 	int				i;
 	pthread_t		th[index->nbr_philo];
-	/* pthread_mutex_t	forks[index->nbr_philo]; */
 	pthread_mutex_t	print_action;
+	pthread_mutex_t	meal;
 
 	i = 0;
 	pthread_mutex_init(&print_action, NULL);
+	pthread_mutex_init(&meal, NULL);
 	while (i < index->nbr_philo)
 	{
 		pthread_mutex_init(&index->philo[i].right_fork.fork, NULL);
 		index->philo[i].print = &print_action;
+		index->philo[i].ready = &meal;
 		index->philo[i].index = index;
 		if (i == index->nbr_philo - 1)
 			index->philo[i].left_fork = &index->philo[0].right_fork;
@@ -139,6 +183,7 @@ int	create_philo(t_table *index)
 		i++;
 	}
 	i = 0;
+	check_death(index, &meal);
 	// check if the philosopher is dead
 	while (i < index->nbr_philo)
 	{
@@ -154,5 +199,6 @@ int	create_philo(t_table *index)
 		i++;
 	}
 	pthread_mutex_destroy(&print_action);
+	pthread_mutex_destroy(&meal);
 	return (TRUE);
 }

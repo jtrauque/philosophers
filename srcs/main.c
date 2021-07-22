@@ -28,6 +28,8 @@ static int	init_index(t_table *index, char *argv[], int argc)
 	index->time_die = ft_atoi_philo(argv[j++]);
 	index->time_eat = ft_atoi_philo(argv[j++]);
 	index->time_sleep = ft_atoi_philo(argv[j++]);
+	index->allright = 0;
+	index->dead = 0;
 	if (argc == 6)
 		index->each_eat = ft_atoi_philo(argv[j++]);
 	else

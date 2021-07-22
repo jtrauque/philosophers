@@ -54,6 +54,7 @@ typedef struct	s_table
 	int each_eat;
 	int nbr_forks;
 	int dead;
+	int allright;
 	t_philo	*philo;
 }				t_table;
 
