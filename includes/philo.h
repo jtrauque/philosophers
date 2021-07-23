@@ -18,7 +18,8 @@ typedef	enum e_arg
 	EAT,
 	SLEEP,
 	THINK,
-	DEAD
+	DEAD,
+	END
 }			t_arg;
 
 typedef int	t_bool;
@@ -61,6 +62,8 @@ typedef struct	s_table
 /* TOOLS */
 int	ft_atoi_philo(char *str);
 void	ft_putstr_fd(char *str, int fd);
+int	check_time(void);
+void	print(int id, t_philo *philo, int action);
 
 /* THREAD */
 int	create_philo(t_table *index);
