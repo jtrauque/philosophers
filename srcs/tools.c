@@ -47,14 +47,20 @@ void	print(int id, t_philo *philo, int action)
 	if (action == FORK)
 		printf("%d : Philosopher %d has taken a fork\n", check_time(), id);
 	else if (action == EAT)
+	{
+		printf("%d : Philosopher %d has taken a fork\n", check_time(), id);
+		printf("%d : Philosopher %d has taken a fork\n", check_time(), id);
 		printf("%d : Philosopher %d is eating\n", check_time(), id);
+	}
 	else if (action == SLEEP)
+	{
 		printf("%d : Philosopher %d is sleeping\n", check_time(), id);
+	}
 	else if (action == THINK)
 		printf("%d : Philosopher %d is thinking\n", check_time(), id);
 	else if (action == DEAD)
 		printf("%d : Philosopher %d is dead\n", check_time(), id);
 	else
-		printf("%d : Philosopher %d - end of simulation\n", check_time(), id);
+		printf("%d : Everyone has eaten : End of simulation\n", check_time());
 	pthread_mutex_unlock(philo->print);
 }

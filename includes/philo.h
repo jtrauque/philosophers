@@ -67,5 +67,6 @@ void	print(int id, t_philo *philo, int action);
 
 /* THREAD */
 int	create_philo(t_table *index);
+void	release_fork(t_philo *philo);
 
 #endif 
