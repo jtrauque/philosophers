@@ -1,6 +1,6 @@
 NAME      = philo
 
-SRCS      = main.c tools.c thread.c
+SRCS      = main.c tools.c thread.c check.c
 SRC_DIR   = srcs/
 OBJ_DIR   = objs/
 

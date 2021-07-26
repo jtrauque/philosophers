@@ -31,7 +31,7 @@ int	check_time(void)
 {
 	struct timeval	current_time;
 	static int		start_time = 0;
-	// on met une heure de reference (creation de l univers 01/01/1970)
+
 	if (gettimeofday(&current_time, NULL) == -1)
 		return (-1);
 	if (!start_time)
@@ -39,6 +39,18 @@ int	check_time(void)
 			+ (current_time.tv_usec / 1000);
 	return ((current_time.tv_sec * 1000)
 		+ (current_time.tv_usec / 1000) - start_time);
+}
+
+pthread_t	*malloc_thread(int nbr)
+{
+	pthread_t	*th;
+	int			i;
+
+	i = 0;
+	th = malloc(sizeof(pthread_t) * nbr);
+	if (th == NULL)
+		return (NULL);
+	return (th);
 }
 
 void	print(int id, t_philo *philo, int action)

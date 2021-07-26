@@ -55,9 +55,6 @@ int	main(int argc, char *argv[])
 		ft_putstr_fd("an argument is not valid", 2);
 		return (FALSE);
 	}
-	printf("- nbr philo = %d\n- time to die = %d\n- time to eat = %d\n- time to sleep = %d\n", index.nbr_philo, index.time_die, index.time_eat, index.time_sleep);
-	for (int i = 0; i < index.nbr_philo; i++)
-		printf("philo nbr %d eat %d times\n", i + 1, index.each_eat);
 	create_philo(&index);
 	free(index.philo);
 	return (0);

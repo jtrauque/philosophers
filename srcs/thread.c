@@ -1,158 +1,42 @@
 #include "philo.h"
 
-int	premission_to_left(t_protect *fork, t_philo *philo)
-{
-	int	ret;
-
-	ret = 0;
-	pthread_mutex_lock(&fork->fork);
-	if (fork->take == 0)
-	{
-		fork->take = 1;
-		ret = fork->take;
-	}
-	pthread_mutex_unlock(&fork->fork);
-	if (ret == 0)
-		pthread_mutex_lock(philo->ready);
-	return (ret);
-}
-
-int	premission_to_right(t_protect *left_fork, t_protect *right_fork, t_philo *philo)
-{
-	int	ret;
-	int	plop;
-
-	ret = 0;
-	pthread_mutex_lock(&right_fork->fork);
-	plop = right_fork->take;
-	if (right_fork->take == 0)
-	{
-		right_fork->take = 1;
-		ret = right_fork->take;
-	}
-	pthread_mutex_unlock(&right_fork->fork);
-	pthread_mutex_lock(&left_fork->fork);
-	if (plop == 1)
-		left_fork->take = 0;
-	pthread_mutex_unlock(&left_fork->fork);
-	if (ret == 0)
-		pthread_mutex_lock(philo->ready);
-	return (ret);
-}
-
 void	release_fork(t_philo *philo)
 {
-	pthread_mutex_lock(&philo->left_fork->fork);
-	philo->left_fork->take = 0;
-	pthread_mutex_unlock(&philo->left_fork->fork);
-	pthread_mutex_lock(&philo->right_fork.fork);
-	philo->right_fork.take = 0;
-	pthread_mutex_unlock(&philo->right_fork.fork);
+	check_mutex(&philo->left_fork->fork, &philo->left_fork->take, 0);
+	check_mutex(&philo->right_fork.fork, &philo->right_fork.take, 0);
 }
 
 void	*routine(void *arg)
 {
-	t_philo			*philo;
+	t_philo	*philo;
 
 	philo = (t_philo *) arg;
-	pthread_mutex_lock(philo->ready);
-	while (!philo->index->dead)
+	while (check_mutex(philo->ready, &philo->index->dead, -1) == TRUE)
 	{
-		pthread_mutex_unlock(philo->ready);
-		if (premission_to_left(philo->left_fork, philo) == 0)
-			continue ;
-		if (premission_to_right(philo->left_fork, &philo->right_fork, philo) == 0)
+		if (premission_to_left(philo->left_fork) == 0
+			|| premission_to_right(philo->left_fork, &philo->right_fork) == 0)
 			continue ;
 		print(philo->id, philo, EAT);
-		pthread_mutex_lock(philo->ready);
-		philo->nbr_meal++;
-		philo->last_meal = check_time();
-		if (philo->index->dead)
-		{
-			pthread_mutex_unlock(philo->ready);
+		check_mutex(philo->ready, &philo->nbr_meal, philo->nbr_meal + 1);
+		check_mutex(philo->ready, &philo->last_meal, check_time());
+		if (check_mutex(philo->ready, &philo->index->dead, -1))
 			return (0);
-		}
-		pthread_mutex_unlock(philo->ready);
 		usleep(philo->index->time_eat * 1000);
-		pthread_mutex_lock(philo->ready);
-		if (philo->index->dead)
-		{
-			pthread_mutex_unlock(philo->ready);
+		if (check_mutex(philo->ready, &philo->index->dead, -1))
 			return (0);
-		}
-		pthread_mutex_unlock(philo->ready);
 		print(philo->id, philo, SLEEP);
 		release_fork(philo);
 		usleep(philo->index->time_sleep * 1000);
-		pthread_mutex_lock(philo->ready);
-		if (philo->index->dead)
-		{
-			pthread_mutex_unlock(philo->ready);
+		if (check_mutex(philo->ready, &philo->index->dead, -1))
 			return (0);
-		}
-		pthread_mutex_unlock(philo->ready);
 		print(philo->id, philo, THINK);
 		usleep(100);
-		pthread_mutex_lock(philo->ready);
 	}
-	pthread_mutex_unlock(philo->ready);
 	return (TRUE);
 }
 
-void	check_death(t_table *index, pthread_mutex_t *meal)
-{
-	int	i;
-
-	i = 0;
-	while (!index->allright)
-	{
-		i = 0;
-		while (i < index->nbr_philo && index->dead == 0)
-		{
-			pthread_mutex_lock(meal);
-			if (check_time() - index->philo[i].last_meal > index->time_die)
-			{
-				print(index->philo[i].id, index->philo, DEAD);
-				index->dead = 1;
-			}
-			pthread_mutex_unlock(meal);
-			i++;
-		}
-		if (index->dead)
-			break ;
-		i = 0;
-		pthread_mutex_lock(meal);
-		while (i < index->nbr_philo 
-				&& index->each_eat != -1 
-				&& index->philo[i].nbr_meal >= index->each_eat)
-		{
-			printf("-------------->PHILO %d<------------------\n", i);
-			i++;
-		}
-		if (i == index->nbr_philo)
-		{
-			print(index->philo[i - 1].id, index->philo, END);
-			index->allright = 1;
-			index->dead = 1;
-		}
-		pthread_mutex_unlock(meal);
-		usleep(1000 * 1000);
-	}
-}
-
-pthread_t	*malloc_thread(int nbr)
-{
-	pthread_t	*th;
-	int	i;
-
-	i = 0;
-	th = malloc(sizeof(pthread_t) * nbr);
-	if (th == NULL)
-		return (NULL);
-	return (th);
-}
-
-void	init_thread(t_table *index, pthread_mutex_t *print, pthread_mutex_t *meal)
+void	init_thread(t_table *index, pthread_mutex_t *print,
+		pthread_mutex_t *meal)
 {
 	int	i;
 
@@ -169,13 +53,13 @@ void	init_thread(t_table *index, pthread_mutex_t *print, pthread_mutex_t *meal)
 			index->philo[i].left_fork = &index->philo[0].right_fork;
 		else
 			index->philo[i].left_fork = &index->philo[i + 1].right_fork;
-		// pointeur sur la fourchette du voisin
 		index->philo[i].right_fork.take = 0;
 		i++;
 	}
 }
 
-int	end_of_simulation(t_table *index, pthread_t *th, pthread_mutex_t *print, pthread_mutex_t *meal)
+int	end_of_simulation(t_table *index, pthread_t *th, pthread_mutex_t *print,
+		pthread_mutex_t *meal)
 {
 	int	i;
 
@@ -183,7 +67,10 @@ int	end_of_simulation(t_table *index, pthread_t *th, pthread_mutex_t *print, pth
 	while (i < index->nbr_philo)
 	{
 		if (pthread_join(th[i], NULL) != 0)
+		{
+			ft_putstr_fd("Failed to join your thread", 2);
 			return (FALSE);
+		}
 		printf("thread %d has finished his execution\n", i);
 		i++;
 	}
@@ -214,34 +101,14 @@ int	create_philo(t_table *index)
 		if (pthread_create(&th[i], NULL, &routine, &index->philo[i]) != 0)
 		{
 			ft_putstr_fd("Failed to create thread", 2);
+			free(th);
 			return (FALSE);
 		}
 		printf("thread %d has started\n", i);
 		i++;
 	}
-	i = 0;
 	check_death(index, &meal);
-	if (end_of_simulation(index, th, &print_action, &meal) == FALSE)
-	{
-		free(th);
-		return (FALSE);
-	}
-	// check if the philosopher is dead
-	/* while (i < index->nbr_philo) */
-	/* { */
-	/* 	if (pthread_join(th[i], NULL) != 0) */
-	/* 		return (FALSE); */
-	/* 	printf("thread %d has finished his execution\n", i); */
-	/* 	i++; */
-	/* } */
-	/* i = 0; */
-	/* while (i < index->nbr_philo) */
-	/* { */
-	/* 	pthread_mutex_destroy(&index->philo[i].right_fork.fork); */
-	/* 	i++; */
-	/* } */
-	/* pthread_mutex_destroy(&print_action); */
-	/* pthread_mutex_destroy(&meal); */
+	end_of_simulation(index, th, &print_action, &meal);
 	free(th);
 	return (TRUE);
 }
