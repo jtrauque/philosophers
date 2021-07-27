@@ -17,23 +17,30 @@ void	*routine(void *arg)
 	t_philo	*philo;
 
 	philo = (t_philo *) arg;
-	while (check_on_life(&philo->index->semaphore, &philo->index->dead, -1) == TRUE)
+	if (philo->id % 2)
+		usleep(philo->index->time_eat * 1000 + 100);
+	while (check_on_life(philo->index->ready, &philo->index->dead, -1) == TRUE)
 	{
 		/* if (premission_to_left(philo->left_fork) == 0 */
 		/* 	|| premission_to_right(philo->left_fork, &philo->right_fork) == 0) */
 		/* 	continue ; */
+		sem_wait(philo->index->forks);
+		print(philo->id, philo, FORK);
+		sem_post(philo->index->forks);
+		sem_wait(philo->index->forks);
+		print(philo->id, philo, FORK);
+		sem_post(philo->index->forks);
 		print(philo->id, philo, EAT);
-		check_on_life(&philo->index->semaphore, &philo->nbr_meal, philo->nbr_meal + 1);
-		check_on_life(&philo->index->semaphore, &philo->last_meal, check_time());
-		if (check_on_life(&philo->index->semaphore, &philo->index->dead, -1))
+		check_on_life(philo->index->ready, &philo->nbr_meal, philo->nbr_meal + 1);
+		check_on_life(philo->index->ready, &philo->last_meal, check_time());
+		if (check_on_life(philo->index->ready, &philo->index->dead, -1))
 			return (0);
 		usleep(philo->index->time_eat * 1000);
-		if (check_on_life(&philo->index->semaphore, &philo->index->dead, -1))
+		if (check_on_life(philo->index->ready, &philo->index->dead, -1))
 			return (0);
 		print(philo->id, philo, SLEEP);
-		/* release_fork(philo); */
 		usleep(philo->index->time_sleep * 1000);
-		if (check_on_life(&philo->index->semaphore, &philo->index->dead, -1))
+		if (check_on_life(philo->index->ready, &philo->index->dead, -1))
 			return (0);
 		print(philo->id, philo, THINK);
 		usleep(100);
@@ -55,7 +62,12 @@ int	end_of_simulation(t_table *index, pthread_t *th)
 		}
 		i++;
 	}
-	sem_destroy(&index->semaphore);
+	sem_close(index->forks);
+	sem_close(index->ready);
+	sem_close(index->print);
+	sem_unlink("/forks");
+	sem_unlink("/ready");
+	sem_unlink("/print");
 	return (TRUE);
 }
 
@@ -66,7 +78,14 @@ int	create_philo(t_table *index)
 
 	i = -1;
 	th = malloc_thread(index->nbr_philo);
-	sem_init(&index->semaphore, 0, index->nbr_philo);
+	index->forks = sem_open("/forks", O_CREAT, S_IRWXU, index->nbr_philo);
+	index->ready = sem_open("/ready", O_CREAT, S_IRWXU, 1);
+	index->print = sem_open("/print", O_CREAT, S_IRWXU, 1);
+	if (index->forks <= 0 || index->ready <= 0 || index->print <= 0)
+	{
+		free(th);
+		return (FALSE);
+	}
 	while (++i < index->nbr_philo)
 		index->philo[i].index = index;
 	i = 0;
@@ -81,7 +100,7 @@ int	create_philo(t_table *index)
 		}
 		i++;
 	}
-	check_death(index, &index->semaphore);
+	check_death(index, index->ready);
 	end_of_simulation(index, th);
 	free(th);
 	return (TRUE);

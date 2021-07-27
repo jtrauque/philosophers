@@ -20,6 +20,8 @@
 # include <stdio.h>
 # include <sys/time.h>
 # include <semaphore.h>
+# include <sys/stat.h>
+# include <fcntl.h>
 
 # define TRUE 0
 # define FALSE 1
@@ -36,12 +38,6 @@ typedef enum e_arg
 
 struct	s_table;
 
-/* typedef struct s_protect */
-/* { */
-/* 	pthread_mutex_t	fork; */
-/* 	int				take; */
-/* }				t_protect; */
-
 typedef struct s_philo
 {
 	int				is_eating;
@@ -49,10 +45,6 @@ typedef struct s_philo
 	int				last_meal;
 	int				id;
 	int				died;
-	/* t_protect		*left_fork; */
-	/* t_protect		right_fork; */
-	/* pthread_mutex_t	*print; */
-	/* pthread_mutex_t	*ready; */
 	struct s_table	*index;
 }				t_philo;
 
@@ -66,7 +58,9 @@ typedef struct s_table
 	int		nbr_forks;
 	int		dead;
 	int		allright;
-	sem_t	semaphore;
+	sem_t	*forks;
+	sem_t	*ready;
+	sem_t	*print;
 	t_philo	*philo;
 }				t_table;
 
@@ -82,11 +76,9 @@ int			create_philo(t_table *index);
 void		release_fork(t_philo *philo);
 
 /* CHECK */
-/* int			check_mutex(pthread_mutex_t *mutex, int *value, int change); */
 int	check_on_life(sem_t *semaphore, int *value, int change);
 void	check_death(t_table *index, sem_t *semaphore);
 void	check_allright(t_table *index, sem_t *semaphore);
-/* int			premission_to_left(t_protect *fork); */
-/* int			premission_to_right(t_protect *left_fork, t_protect *right_fork); */
-
+/* int	premission_to_left(t_protect *fork); */
+/* int	premission_to_right(t_protect *left_fork, t_protect *right_fork); */
 #endif 

@@ -17,15 +17,13 @@
 /* 	int	ret; */
 
 /* 	ret = 0; */
-/* 	sem_wait(&philo->index->semaphore); */
-/* 	/1* pthread_mutex_lock(&fork->fork); *1/ */
+/* 	pthread_mutex_lock(&fork->fork); */
 /* 	if (fork->take == 0) */
 /* 	{ */
 /* 		fork->take = 1; */
 /* 		ret = fork->take; */
 /* 	} */
-/* 	/1* pthread_mutex_unlock(&fork->fork); *1/ */
-/* 	sem_post(&philo->index->semaphore); */
+/* 	pthread_mutex_unlock(&fork->fork); */
 /* 	return (ret); */
 /* } */
 
@@ -35,16 +33,14 @@
 /* 	int	old_stat; */
 
 /* 	ret = 0; */
-/* 	sem_wait(&philo->index->semaphore); */
-/* 	/1* pthread_mutex_lock(&right_fork->fork); *1/ */
+/* 	pthread_mutex_lock(&right_fork->fork); */
 /* 	old_stat = right_fork->take; */
 /* 	if (right_fork->take == 0) */
 /* 	{ */
 /* 		right_fork->take = 1; */
 /* 		ret = right_fork->take; */
 /* 	} */
-/* 	/1* pthread_mutex_unlock(&right_fork->fork); *1/ */
-/* 	sem_post(&philo->index->semaphore); */
+/* 	pthread_mutex_unlock(&right_fork->fork); */
 /* 	if (old_stat == 1) */
 /* 		check_mutex(&left_fork->fork, &left_fork->take, 0); */
 /* 	return (ret); */

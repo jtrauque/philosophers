@@ -67,14 +67,11 @@ pthread_t	*malloc_thread(int nbr)
 
 void	print(int id, t_philo *philo, int action)
 {
-	/* pthread_mutex_lock(philo->print); */
-	sem_wait(&philo->index->semaphore);
+	sem_wait(philo->index->print);
 	if (action == FORK)
 		printf("%d : Philosopher %d has taken a fork\n", check_time(), id);
 	else if (action == EAT)
 	{
-		printf("%d : Philosopher %d has taken a fork\n", check_time(), id);
-		printf("%d : Philosopher %d has taken a fork\n", check_time(), id);
 		printf("%d : Philosopher %d is eating\n", check_time(), id);
 	}
 	else if (action == SLEEP)
@@ -87,6 +84,5 @@ void	print(int id, t_philo *philo, int action)
 		printf("%d : Philosopher %d is dead\n", check_time(), id);
 	else
 		printf("%d : Everyone has eaten : End of simulation\n", check_time());
-	sem_post(&philo->index->semaphore);
-	/* pthread_mutex_unlock(philo->print); */
+	sem_post(philo->index->print);
 }
