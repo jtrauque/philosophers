@@ -1,3 +1,15 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   thread.c                                           :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: julie <jtrauque@student.42.fr>             +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2021/07/27 15:26:25 by julie             #+#    #+#             */
+/*   Updated: 2021/07/27 15:26:30 by julie            ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
 #include "philo.h"
 
 void	release_fork(t_philo *philo)
@@ -71,7 +83,6 @@ int	end_of_simulation(t_table *index, pthread_t *th, pthread_mutex_t *print,
 			ft_putstr_fd("Failed to join your thread", 2);
 			return (FALSE);
 		}
-		printf("thread %d has finished his execution\n", i);
 		i++;
 	}
 	i = 0;
@@ -104,7 +115,6 @@ int	create_philo(t_table *index)
 			free(th);
 			return (FALSE);
 		}
-		printf("thread %d has started\n", i);
 		i++;
 	}
 	check_death(index, &meal);
