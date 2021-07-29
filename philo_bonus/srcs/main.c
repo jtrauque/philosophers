@@ -66,6 +66,13 @@ int	main(int argc, char *argv[])
 	if (init_index(&index, argv, argc))
 	{
 		ft_putstr_fd("an argument is not valid", 2);
+		free(index.philo);
+		return (FALSE);
+	}
+	if (index.nbr_philo / 2 == 0)
+	{
+		free(index.philo);
+		ft_putstr_fd("error not enough forks", 2);
 		return (FALSE);
 	}
 	create_philo(&index);

@@ -17,28 +17,27 @@ void	*routine(void *arg)
 	t_philo	*philo;
 
 	philo = (t_philo *) arg;
-	if (philo->id % 2)
-		usleep(philo->index->time_eat * 1000 + 100);
 	while (check_on_life(philo->index->ready, &philo->index->dead, -1) == TRUE)
 	{
-		/* if (premission_to_left(philo->left_fork) == 0 */
-		/* 	|| premission_to_right(philo->left_fork, &philo->right_fork) == 0) */
-		/* 	continue ; */
 		sem_wait(philo->index->forks);
 		print(philo->id, philo, FORK);
-		sem_post(philo->index->forks);
-		sem_wait(philo->index->forks);
 		print(philo->id, philo, FORK);
-		sem_post(philo->index->forks);
 		print(philo->id, philo, EAT);
 		check_on_life(philo->index->ready, &philo->nbr_meal, philo->nbr_meal + 1);
 		check_on_life(philo->index->ready, &philo->last_meal, check_time());
 		if (check_on_life(philo->index->ready, &philo->index->dead, -1))
+		{
+			sem_post(philo->index->forks);
 			return (0);
+		}
 		usleep(philo->index->time_eat * 1000);
 		if (check_on_life(philo->index->ready, &philo->index->dead, -1))
+		{
+			sem_post(philo->index->forks);
 			return (0);
+		}
 		print(philo->id, philo, SLEEP);
+		sem_post(philo->index->forks);
 		usleep(philo->index->time_sleep * 1000);
 		if (check_on_life(philo->index->ready, &philo->index->dead, -1))
 			return (0);
@@ -77,15 +76,15 @@ int	create_philo(t_table *index)
 	pthread_t		*th;
 
 	i = -1;
-	th = malloc_thread(index->nbr_philo);
-	index->forks = sem_open("/forks", O_CREAT, S_IRWXU, index->nbr_philo);
+	sem_unlink("/forks");
+	sem_unlink("/ready");
+	sem_unlink("/print");
+	index->forks = sem_open("/forks", O_CREAT, S_IRWXU, index->nbr_philo / 2);
 	index->ready = sem_open("/ready", O_CREAT, S_IRWXU, 1);
 	index->print = sem_open("/print", O_CREAT, S_IRWXU, 1);
 	if (index->forks <= 0 || index->ready <= 0 || index->print <= 0)
-	{
-		free(th);
 		return (FALSE);
-	}
+	th = malloc_thread(index->nbr_philo);
 	while (++i < index->nbr_philo)
 		index->philo[i].index = index;
 	i = 0;
