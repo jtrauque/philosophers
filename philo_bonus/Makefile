@@ -1,6 +1,6 @@
 NAME      = philo_bonus
 
-SRCS      = main.c tools.c thread.c check.c
+SRCS      = main.c tools.c thread.c check.c routine.c
 SRC_DIR   = srcs/
 OBJ_DIR   = objs/
 

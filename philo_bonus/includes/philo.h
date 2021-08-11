@@ -81,9 +81,11 @@ int			create_philo(t_table *index);
 void		release_fork(t_philo *philo);
 
 /* CHECK */
-int	check_on_life(sem_t *semaphore, int *value, int change);
-void	*check_death(void *arg);
-int	check_allright(t_table *index, sem_t *semaphore);
-/* int	premission_to_left(t_protect *fork); */
-/* int	premission_to_right(t_protect *left_fork, t_protect *right_fork); */
+int			check_on_life(sem_t *semaphore, int *value, int change);
+void		*check_death(void *arg);
+int			check_allright(t_table *index, sem_t *semaphore);
+
+/* ROUTINE */
+void		*routine(void *arg);
+
 #endif 

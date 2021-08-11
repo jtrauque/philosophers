@@ -36,7 +36,6 @@ int	check_allright(t_table *index, sem_t *semaphore)
 		&& index->each_eat != -1
 		&& index->philo[i].nbr_meal >= index->each_eat)
 	{
-		printf("-------------->PHILO %d<------------------\n", i);
 		i++;
 	}
 	if (i == index->nbr_philo)
@@ -52,29 +51,28 @@ int	check_allright(t_table *index, sem_t *semaphore)
 
 void	*check_death(void *arg)
 {
-	int	i;
+	int		i;
 	t_philo	*philo;
 
 	philo = (t_philo *) arg;
-	i = 0;
 	while (1)
 	{
-		i = 0;
-		while (i < philo->index->nbr_philo && philo->index->dead == 0)
+		i = -1;
+		while (++i < philo->index->nbr_philo && philo->index->dead == 0)
 		{
 			sem_wait(philo->index->ready);
-			if (check_time() - philo->index->philo[i].last_meal > philo->index->time_die)
+			printf("philo %d : time = %d - last meal = %d - time die = %d\n", i + 1, check_time(), philo->index->philo[i].last_meal, philo->index->time_die);
+			if (check_time() - philo->index->philo[i].last_meal
+				> philo->index->time_die)
 			{
 				print(philo->index->philo[i].id, philo, DEAD);
 				philo->index->dead = 1;
 				exit(1);
 			}
 			sem_post(philo->index->ready);
-			i++;
 		}
-		if (philo->index->dead)
-			break ;
-		if (check_allright(philo->index, philo->index->ready) == FALSE)
+		if (philo->index->dead
+			|| check_allright(philo->index, philo->index->ready) == FALSE)
 			break ;
 		usleep(1000 * 1000);
 	}
