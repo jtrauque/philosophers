@@ -66,7 +66,6 @@ void	*routine(void *arg)
 
 	philo = (t_philo *) arg;
 	thread_manager(philo, 0);
-	pthread_detach(philo->th);
 	while (check_on_life(philo->index->ready, &philo->index->dead, -1) == TRUE)
 	{
 		eat(philo);
