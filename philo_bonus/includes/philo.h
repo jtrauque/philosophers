@@ -22,6 +22,8 @@
 # include <semaphore.h>
 # include <sys/stat.h>
 # include <fcntl.h>
+# include <sys/types.h>
+# include <sys/wait.h>
 
 # define TRUE 0
 # define FALSE 1
@@ -45,6 +47,9 @@ typedef struct s_philo
 	int				last_meal;
 	int				id;
 	int				died;
+	pid_t			pid_id;
+	sem_t			*ready;
+	pthread_t		th;
 	struct s_table	*index;
 }				t_philo;
 
@@ -77,8 +82,8 @@ void		release_fork(t_philo *philo);
 
 /* CHECK */
 int	check_on_life(sem_t *semaphore, int *value, int change);
-void	check_death(t_table *index, sem_t *semaphore);
-void	check_allright(t_table *index, sem_t *semaphore);
+void	*check_death(void *arg);
+int	check_allright(t_table *index, sem_t *semaphore);
 /* int	premission_to_left(t_protect *fork); */
 /* int	premission_to_right(t_protect *left_fork, t_protect *right_fork); */
 #endif 

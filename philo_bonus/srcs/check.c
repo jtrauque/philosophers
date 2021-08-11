@@ -12,40 +12,6 @@
 
 #include "philo.h"
 
-/* int	premission_to_left(t_protect *fork) */
-/* { */
-/* 	int	ret; */
-
-/* 	ret = 0; */
-/* 	pthread_mutex_lock(&fork->fork); */
-/* 	if (fork->take == 0) */
-/* 	{ */
-/* 		fork->take = 1; */
-/* 		ret = fork->take; */
-/* 	} */
-/* 	pthread_mutex_unlock(&fork->fork); */
-/* 	return (ret); */
-/* } */
-
-/* int	premission_to_right(t_protect *left_fork, t_protect *right_fork) */
-/* { */
-/* 	int	ret; */
-/* 	int	old_stat; */
-
-/* 	ret = 0; */
-/* 	pthread_mutex_lock(&right_fork->fork); */
-/* 	old_stat = right_fork->take; */
-/* 	if (right_fork->take == 0) */
-/* 	{ */
-/* 		right_fork->take = 1; */
-/* 		ret = right_fork->take; */
-/* 	} */
-/* 	pthread_mutex_unlock(&right_fork->fork); */
-/* 	if (old_stat == 1) */
-/* 		check_mutex(&left_fork->fork, &left_fork->take, 0); */
-/* 	return (ret); */
-/* } */
-
 int	check_on_life(sem_t *semaphore, int *value, int change)
 {
 	sem_wait(semaphore);
@@ -60,7 +26,7 @@ int	check_on_life(sem_t *semaphore, int *value, int change)
 	return (TRUE);
 }
 
-void	check_allright(t_table *index, sem_t *semaphore)
+int	check_allright(t_table *index, sem_t *semaphore)
 {
 	int	i;
 
@@ -78,32 +44,39 @@ void	check_allright(t_table *index, sem_t *semaphore)
 		print(index->philo[i - 1].id, index->philo, END);
 		index->allright = 1;
 		index->dead = 1;
+		return (FALSE);
 	}
 	sem_post(semaphore);
+	return (TRUE);
 }
 
-void	check_death(t_table *index, sem_t *semaphore)
+void	*check_death(void *arg)
 {
 	int	i;
+	t_philo	*philo;
 
+	philo = (t_philo *) arg;
 	i = 0;
-	while (!index->allright)
+	while (1)
 	{
 		i = 0;
-		while (i < index->nbr_philo && index->dead == 0)
+		while (i < philo->index->nbr_philo && philo->index->dead == 0)
 		{
-			sem_wait(semaphore);
-			if (check_time() - index->philo[i].last_meal > index->time_die)
+			sem_wait(philo->index->ready);
+			if (check_time() - philo->index->philo[i].last_meal > philo->index->time_die)
 			{
-				print(index->philo[i].id, index->philo, DEAD);
-				index->dead = 1;
+				print(philo->index->philo[i].id, philo, DEAD);
+				philo->index->dead = 1;
+				exit(1);
 			}
-			sem_post(semaphore);
+			sem_post(philo->index->ready);
 			i++;
 		}
-		if (index->dead)
+		if (philo->index->dead)
 			break ;
-		check_allright(index, semaphore);
+		if (check_allright(philo->index, philo->index->ready) == FALSE)
+			break ;
 		usleep(1000 * 1000);
 	}
+	return (TRUE);
 }
