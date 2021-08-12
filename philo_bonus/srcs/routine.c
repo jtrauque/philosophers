@@ -21,7 +21,6 @@ static void	eat(t_philo *philo)
 	print(philo->id, philo, EAT);
 	check_on_life(philo->index->ready, &philo->nbr_meal,
 		philo->nbr_meal + 1);
-	check_on_life(philo->index->ready, &philo->last_meal, check_time());
 }
 
 static void	release(t_philo *philo, int dead)
@@ -72,17 +71,22 @@ void	*routine(void *arg)
 		if (check_on_life(philo->index->ready, &philo->index->dead, -1))
 		{
 			release(philo, 1);
+			printf("-------------------1\n");
 			break ;
 		}
 		usleep(philo->index->time_eat * 1000);
 		if (check_on_life(philo->index->ready, &philo->index->dead, -1))
 		{
 			release(philo, 1);
+			printf("-------------------2\n");
 			break ;
 		}
 		release(philo, 0);
 		if (check_on_life(philo->index->ready, &philo->index->dead, -1))
+		{
+			printf("-------------------3\n");
 			break ;
+		}
 		print(philo->id, philo, THINK);
 	}
 	thread_manager(philo, 1);

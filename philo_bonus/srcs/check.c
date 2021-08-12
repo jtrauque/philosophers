@@ -15,8 +15,10 @@
 int	check_on_life(sem_t *semaphore, int *value, int change)
 {
 	sem_wait(semaphore);
+	printf("dead = %d\n", *value);
 	if (*value == 1 && change == -1)
 	{
+		printf("PLOP\n");
 		sem_post(semaphore);
 		return (FALSE);
 	}
@@ -26,7 +28,7 @@ int	check_on_life(sem_t *semaphore, int *value, int change)
 	return (TRUE);
 }
 
-int	check_allright(t_table *index, sem_t *semaphore)
+static int	check_allright(t_table *index, t_philo *philo, sem_t *semaphore)
 {
 	int	i;
 
@@ -34,13 +36,13 @@ int	check_allright(t_table *index, sem_t *semaphore)
 	sem_wait(semaphore);
 	while (i < index->nbr_philo
 		&& index->each_eat != -1
-		&& index->philo[i].nbr_meal >= index->each_eat)
+		&& philo->nbr_meal >= index->each_eat)
 	{
 		i++;
 	}
 	if (i == index->nbr_philo)
 	{
-		print(index->philo[i - 1].id, index->philo, END);
+		print(philo->id, index->philo, END);
 		index->allright = 1;
 		index->dead = 1;
 		return (FALSE);
@@ -61,20 +63,20 @@ void	*check_death(void *arg)
 		while (++i < philo->index->nbr_philo && philo->index->dead == 0)
 		{
 			sem_wait(philo->index->ready);
-			printf("philo %d : time = %d - last meal = %d - time die = %d\n", i + 1, check_time(), philo->index->philo[i].last_meal, philo->index->time_die);
-			if (check_time() - philo->index->philo[i].last_meal
+			if (check_time() - philo->last_meal
 				> philo->index->time_die)
 			{
-				print(philo->index->philo[i].id, philo, DEAD);
+				printf("- time = %d\n- last meal = %d\n- time to die = %d\n", check_time(), philo->last_meal, philo->index->time_die);
+				printf("->time since the last meal = %d<-\n", check_time() - philo->last_meal); 
+				print(philo->id, philo, DEAD);
 				philo->index->dead = 1;
 				exit(1);
 			}
 			sem_post(philo->index->ready);
 		}
 		if (philo->index->dead
-			|| check_allright(philo->index, philo->index->ready) == FALSE)
-			break ;
-		usleep(1000 * 1000);
+			|| check_allright(philo->index, philo, philo->index->ready) == FALSE)
+			exit(1);
 	}
 	return (TRUE);
 }

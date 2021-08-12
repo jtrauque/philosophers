@@ -83,7 +83,6 @@ void		release_fork(t_philo *philo);
 /* CHECK */
 int			check_on_life(sem_t *semaphore, int *value, int change);
 void		*check_death(void *arg);
-int			check_allright(t_table *index, sem_t *semaphore);
 
 /* ROUTINE */
 void		*routine(void *arg);
