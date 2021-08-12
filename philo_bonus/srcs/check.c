@@ -15,10 +15,8 @@
 int	check_on_life(sem_t *semaphore, int *value, int change)
 {
 	sem_wait(semaphore);
-	printf("dead = %d\n", *value);
 	if (*value == 1 && change == -1)
 	{
-		printf("PLOP\n");
 		sem_post(semaphore);
 		return (FALSE);
 	}
@@ -63,8 +61,7 @@ void	*check_death(void *arg)
 		while (++i < philo->index->nbr_philo && philo->index->dead == 0)
 		{
 			sem_wait(philo->index->ready);
-			if (check_time() - philo->last_meal
-				> philo->index->time_die)
+			if (check_time() - philo->last_meal > philo->index->time_die)
 			{
 				printf("- time = %d\n- last meal = %d\n- time to die = %d\n", check_time(), philo->last_meal, philo->index->time_die);
 				printf("->time since the last meal = %d<-\n", check_time() - philo->last_meal); 

@@ -21,6 +21,7 @@ static void	eat(t_philo *philo)
 	print(philo->id, philo, EAT);
 	check_on_life(philo->index->ready, &philo->nbr_meal,
 		philo->nbr_meal + 1);
+	check_on_life(philo->index->ready, &philo->last_meal, check_time());
 }
 
 static void	release(t_philo *philo, int dead)
