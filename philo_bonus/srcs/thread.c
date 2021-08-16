@@ -47,7 +47,7 @@ static int	init_sem(t_table *index)
 
 int	create_philo(t_table *index)
 {
-	int				i;
+	int	i;
 
 	i = -1;
 	if (init_sem(index))
@@ -56,6 +56,7 @@ int	create_philo(t_table *index)
 		index->philo[i].index = index;
 	i = -1;
 	check_time();
+	sem_wait(index->ready);
 	while (++i < index->nbr_philo)
 	{
 		index->philo[i].pid_id = fork();
@@ -70,6 +71,7 @@ int	create_philo(t_table *index)
 			exit(0);
 		}
 	}
+	sem_post(index->ready);
 	end_of_simulation(index);
 	return (TRUE);
 }

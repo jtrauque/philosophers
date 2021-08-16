@@ -12,7 +12,13 @@
 
 #include "philo.h"
 
-static void	eat(t_philo *philo)
+static void	release(t_philo *philo)
+{
+	sem_post(philo->index->forks);
+	sem_post(philo->index->forks);
+}
+
+static int	eat(t_philo *philo)
 {
 	sem_wait(philo->index->forks);
 	print(philo->id, philo, FORK);
@@ -22,22 +28,12 @@ static void	eat(t_philo *philo)
 	check_on_life(philo->index->ready, &philo->nbr_meal,
 		philo->nbr_meal + 1);
 	check_on_life(philo->index->ready, &philo->last_meal, check_time());
-}
-
-static void	release(t_philo *philo, int dead)
-{
-	if (dead == 0)
+	if (check_on_life(philo->index->ready, &philo->index->dead, -1))
 	{
-		print(philo->id, philo, SLEEP);
-		sem_post(philo->index->forks);
-		sem_post(philo->index->forks);
-		usleep(philo->index->time_sleep * 1000);
+		release(philo);
+		return (1);
 	}
-	else
-	{
-		sem_post(philo->index->forks);
-		sem_post(philo->index->forks);
-	}
+	return (0);
 }
 
 static void	thread_manager(t_philo *philo, int action)
@@ -61,35 +57,43 @@ static void	thread_manager(t_philo *philo, int action)
 	}
 }
 
-void	*routine(void *arg)
+void	think_opti(t_philo *philo)
 {
-	t_philo	*philo;
+	int time;
+	int thinking_time;
 
-	philo = (t_philo *) arg;
+	time = check_time();
+	thinking_time = philo->index->time_die - (time - philo->last_meal) - 10 > 0;
+	print(philo->id, philo, THINK);
+	if (thinking_time > 0)
+		usleep(thinking_time * 1000);
+}
+
+void	*routine(t_philo *philo)
+{
 	thread_manager(philo, 0);
+	sem_wait(philo->index->ready);
+	sem_post(philo->index->ready);
+	if (philo->id % 2 != 0)
+		usleep(1000);
+	if (philo->id == philo->index->nbr_philo && philo->id % 2 != 0)
+		usleep(1000);
 	while (check_on_life(philo->index->ready, &philo->index->dead, -1) == TRUE)
 	{
-		eat(philo);
-		if (check_on_life(philo->index->ready, &philo->index->dead, -1))
-		{
-			release(philo, 1);
-			printf("-------------------1\n");
+		if(eat(philo))
 			break ;
-		}
 		usleep(philo->index->time_eat * 1000);
 		if (check_on_life(philo->index->ready, &philo->index->dead, -1))
 		{
-			release(philo, 1);
-			printf("-------------------2\n");
+			release(philo);
 			break ;
 		}
-		release(philo, 0);
+		print(philo->id, philo, SLEEP);
+		release(philo);
+		usleep(philo->index->time_sleep * 1000);
 		if (check_on_life(philo->index->ready, &philo->index->dead, -1))
-		{
-			printf("-------------------3\n");
 			break ;
-		}
-		print(philo->id, philo, THINK);
+		think_opti(philo);
 	}
 	/* thread_manager(philo, 1); */
 	return (TRUE);

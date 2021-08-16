@@ -18,6 +18,18 @@ void	release_fork(t_philo *philo)
 	check_mutex(&philo->right_fork.fork, &philo->right_fork.take, 0);
 }
 
+void	think_opti(t_philo *philo)
+{
+	int time;
+	int thinking_time;
+
+	time = check_time();
+	thinking_time = philo->index->time_die - (time - philo->last_meal) - 10 > 0;
+	print(philo->id, philo, THINK);
+	if (thinking_time > 0)
+		usleep(thinking_time * 1000);
+}
+
 void	*routine(void *arg)
 {
 	t_philo	*philo;
@@ -41,8 +53,7 @@ void	*routine(void *arg)
 		usleep(philo->index->time_sleep * 1000);
 		if (check_mutex(philo->ready, &philo->index->dead, -1))
 			return (0);
-		print(philo->id, philo, THINK);
-		usleep(100);
+		think_opti(philo);
 	}
 	return (TRUE);
 }

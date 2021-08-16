@@ -85,6 +85,6 @@ int			check_on_life(sem_t *semaphore, int *value, int change);
 void		*check_death(void *arg);
 
 /* ROUTINE */
-void		*routine(void *arg);
+void		*routine(t_philo *philo);
 
 #endif 
