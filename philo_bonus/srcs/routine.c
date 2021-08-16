@@ -49,6 +49,7 @@ static void	thread_manager(t_philo *philo, int action)
 			ft_putstr_fd("Failed to create thread", 2);
 			exit(1);
 		}
+		pthread_detach(philo->th);
 	}
 	else
 	{
@@ -90,6 +91,6 @@ void	*routine(void *arg)
 		}
 		print(philo->id, philo, THINK);
 	}
-	thread_manager(philo, 1);
+	/* thread_manager(philo, 1); */
 	return (TRUE);
 }
