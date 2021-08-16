@@ -65,6 +65,7 @@ typedef struct s_table
 	int		nbr_forks;
 	int		dead;
 	int		allright;
+	int		fail;
 	t_philo	*philo;
 }				t_table;
 

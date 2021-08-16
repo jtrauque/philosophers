@@ -61,7 +61,7 @@ int	main(int argc, char *argv[])
 	if (argc < 5 || argc > 6)
 	{
 		ft_putstr_fd("please enter the right amount of arguments", 2);
-		return (1);
+		return (FALSE);
 	}
 	if (init_index(&index, argv, argc))
 	{
@@ -70,5 +70,5 @@ int	main(int argc, char *argv[])
 	}
 	create_philo(&index);
 	free(index.philo);
-	return (0);
+	return (TRUE);
 }

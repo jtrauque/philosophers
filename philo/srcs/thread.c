@@ -53,6 +53,7 @@ void	init_thread(t_table *index, pthread_mutex_t *print,
 	int	i;
 
 	i = 0;
+	index->fail = index->nbr_philo;
 	pthread_mutex_init(print, NULL);
 	pthread_mutex_init(meal, NULL);
 	while (i < index->nbr_philo)
@@ -76,7 +77,7 @@ int	end_of_simulation(t_table *index, pthread_t *th, pthread_mutex_t *print,
 	int	i;
 
 	i = 0;
-	while (i < index->nbr_philo)
+	while (i < index->fail)
 	{
 		if (pthread_join(th[i], NULL) != 0)
 		{
@@ -112,6 +113,8 @@ int	create_philo(t_table *index)
 		if (pthread_create(&th[i], NULL, &routine, &index->philo[i]) != 0)
 		{
 			ft_putstr_fd("Failed to create thread", 2);
+			index->fail = i - 1;
+			end_of_simulation(index, th, &print_action, &meal);
 			free(th);
 			return (FALSE);
 		}
