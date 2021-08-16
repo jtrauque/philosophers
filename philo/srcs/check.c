@@ -70,7 +70,6 @@ void	check_allright(t_table *index, pthread_mutex_t *meal)
 		&& index->each_eat != -1
 		&& index->philo[i].nbr_meal >= index->each_eat)
 	{
-		printf("-------------->PHILO %d<------------------\n", i);
 		i++;
 	}
 	if (i == index->nbr_philo)

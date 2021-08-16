@@ -46,7 +46,7 @@ static int	init_index(t_table *index, char *argv[], int argc)
 		index->each_eat = ft_atoi_philo(argv[j++]);
 	else
 		index->each_eat = -1;
-	if (index->nbr_philo <= 0 || index->nbr_philo > 200|| index->time_die < 0
+	if (index->nbr_philo <= 0 || index->nbr_philo > 200 || index->time_die < 0
 		|| index->time_eat < 0 || index->time_sleep < 0
 		|| (argc == 6 && index->each_eat < 0))
 		return (FALSE);
