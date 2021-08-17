@@ -1,6 +1,6 @@
 NAME      = philo
 
-SRCS      = main.c tools.c thread.c check.c
+SRCS      = main.c tools.c thread.c check.c init.c
 SRC_DIR   = srcs/
 OBJ_DIR   = objs/
 
@@ -11,7 +11,7 @@ DEP       = ${OBJS:.o=.d}
 
 CC        = clang
 
-CFLAGS    = -Iincludes -Wall -Wextra -Werror -pthread -MMD
+CFLAGS    = -Iincludes -fsanitize=address -g -Wall -Wextra -Werror -pthread -MMD
 
 RM        = rm -rf
 

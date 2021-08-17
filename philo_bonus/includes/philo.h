@@ -87,4 +87,7 @@ void		*check_death(void *arg);
 /* ROUTINE */
 void		*routine(t_philo *philo);
 
+/* EXIT */
+void		clean_exit(t_philo *philo);
+
 #endif 

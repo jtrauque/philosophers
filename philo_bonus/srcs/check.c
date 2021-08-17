@@ -43,6 +43,7 @@ static int	check_allright(t_table *index, t_philo *philo, sem_t *semaphore)
 		print(philo->id, index->philo, END);
 		index->allright = 1;
 		index->dead = 1;
+		sem_post(semaphore);
 		return (FALSE);
 	}
 	sem_post(semaphore);
@@ -58,21 +59,17 @@ void	*check_death(void *arg)
 	while (1)
 	{
 		i = -1;
-		while (++i < philo->index->nbr_philo && philo->index->dead == 0)
+		sem_wait(philo->index->ready);
+		if (check_time() - philo->last_meal > philo->index->time_die)
 		{
-			sem_wait(philo->index->ready);
-			if (check_time() - philo->last_meal > philo->index->time_die)
-			{
-				printf("- time = %d\n- last meal = %d\n- time to die = %d\n", check_time(), philo->last_meal, philo->index->time_die);
-				printf("->time since the last meal = %d<-\n", check_time() - philo->last_meal); 
-				print(philo->id, philo, DEAD);
-				philo->index->dead = 1;
-				exit(1);
-			}
-			sem_post(philo->index->ready);
+			print(philo->id, philo, DEAD);
+			philo->index->dead = 1;
+			exit(1);
 		}
+		sem_post(philo->index->ready);
 		if (philo->index->dead
-			|| check_allright(philo->index, philo, philo->index->ready) == FALSE)
+			|| check_allright(philo->index, philo, philo->index->ready)
+			== FALSE)
 			exit(1);
 	}
 	return (TRUE);

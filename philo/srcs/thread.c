@@ -20,8 +20,8 @@ void	release_fork(t_philo *philo)
 
 void	think_opti(t_philo *philo)
 {
-	int time;
-	int thinking_time;
+	int	time;
+	int	thinking_time;
 
 	time = check_time();
 	thinking_time = philo->index->time_die - (time - philo->last_meal) - 10 > 0;
@@ -56,30 +56,6 @@ void	*routine(void *arg)
 		think_opti(philo);
 	}
 	return (TRUE);
-}
-
-void	init_thread(t_table *index, pthread_mutex_t *print,
-		pthread_mutex_t *meal)
-{
-	int	i;
-
-	i = 0;
-	index->fail = index->nbr_philo;
-	pthread_mutex_init(print, NULL);
-	pthread_mutex_init(meal, NULL);
-	while (i < index->nbr_philo)
-	{
-		pthread_mutex_init(&index->philo[i].right_fork.fork, NULL);
-		index->philo[i].print = print;
-		index->philo[i].ready = meal;
-		index->philo[i].index = index;
-		if (i == index->nbr_philo - 1)
-			index->philo[i].left_fork = &index->philo[0].right_fork;
-		else
-			index->philo[i].left_fork = &index->philo[i + 1].right_fork;
-		index->philo[i].right_fork.take = 0;
-		i++;
-	}
 }
 
 int	end_of_simulation(t_table *index, pthread_t *th, pthread_mutex_t *print,

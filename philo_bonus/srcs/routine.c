@@ -49,6 +49,7 @@ static void	thread_manager(t_philo *philo, int action)
 	}
 	else
 	{
+		printf("JOIN\n");
 		if (pthread_join(philo->th, NULL) != 0)
 		{
 			ft_putstr_fd("Failed to join your thread", 2);
@@ -57,16 +58,19 @@ static void	thread_manager(t_philo *philo, int action)
 	}
 }
 
-void	think_opti(t_philo *philo)
+static int	think_opti(t_philo *philo)
 {
-	int time;
-	int thinking_time;
+	int	time;
+	int	thinking_time;
 
+	if (check_on_life(philo->index->ready, &philo->index->dead, -1))
+		return (1);
 	time = check_time();
 	thinking_time = philo->index->time_die - (time - philo->last_meal) - 10 > 0;
 	print(philo->id, philo, THINK);
 	if (thinking_time > 0)
 		usleep(thinking_time * 1000);
+	return (0);
 }
 
 void	*routine(t_philo *philo)
@@ -80,7 +84,7 @@ void	*routine(t_philo *philo)
 		usleep(1000);
 	while (check_on_life(philo->index->ready, &philo->index->dead, -1) == TRUE)
 	{
-		if(eat(philo))
+		if (eat(philo))
 			break ;
 		usleep(philo->index->time_eat * 1000);
 		if (check_on_life(philo->index->ready, &philo->index->dead, -1))
@@ -91,10 +95,9 @@ void	*routine(t_philo *philo)
 		print(philo->id, philo, SLEEP);
 		release(philo);
 		usleep(philo->index->time_sleep * 1000);
-		if (check_on_life(philo->index->ready, &philo->index->dead, -1))
+		if (think_opti(philo) == 1)
 			break ;
-		think_opti(philo);
 	}
-	/* thread_manager(philo, 1); */
-	return (TRUE);
+	clean_exit(philo);
+	exit(0);
 }

@@ -63,13 +63,11 @@ int	create_philo(t_table *index)
 		if (index->philo[i].pid_id < 0)
 		{
 			ft_putstr_fd("Failed to create a fork", 2);
+			sem_post(index->ready);
 			return (FALSE);
 		}
 		else if (index->philo[i].pid_id == 0)
-		{
 			routine(&index->philo[i]);
-			exit(0);
-		}
 	}
 	sem_post(index->ready);
 	end_of_simulation(index);
