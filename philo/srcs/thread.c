@@ -24,10 +24,10 @@ void	think_opti(t_philo *philo)
 	int	thinking_time;
 
 	time = check_time();
-	thinking_time = philo->index->time_die - (time - philo->last_meal) - 10 > 0;
+	thinking_time = philo->index->time_die - (time - philo->last_meal) - 10;
 	print(philo->id, philo, THINK);
 	if (thinking_time > 0)
-		usleep(thinking_time * 1000);
+		count_down(thinking_time);
 }
 
 void	*routine(void *arg)
@@ -45,12 +45,12 @@ void	*routine(void *arg)
 		check_mutex(philo->ready, &philo->last_meal, check_time());
 		if (check_mutex(philo->ready, &philo->index->dead, -1))
 			return (0);
-		usleep(philo->index->time_eat * 1000);
+		count_down(philo->index->time_eat);
 		if (check_mutex(philo->ready, &philo->index->dead, -1))
 			return (0);
 		print(philo->id, philo, SLEEP);
 		release_fork(philo);
-		usleep(philo->index->time_sleep * 1000);
+		count_down(philo->index->time_sleep);
 		if (check_mutex(philo->ready, &philo->index->dead, -1))
 			return (0);
 		think_opti(philo);

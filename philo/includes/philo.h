@@ -90,4 +90,6 @@ int			premission_to_right(t_protect *left_fork, t_protect *right_fork);
 /* INIT */
 void		init_thread(t_table *index, pthread_mutex_t *print,
 				pthread_mutex_t *meal);
+void		count_down(int ring);
+
 #endif 

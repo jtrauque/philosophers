@@ -35,3 +35,15 @@ void	init_thread(t_table *index, pthread_mutex_t *print,
 		i++;
 	}
 }
+
+void	count_down(int ring)
+{
+	int	time;
+
+	time = check_time();
+	while (1)
+	{
+		if (check_time() == time + ring)
+			break ;
+	}
+}
