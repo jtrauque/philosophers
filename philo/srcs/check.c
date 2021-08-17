@@ -100,9 +100,9 @@ void	check_death(t_table *index, pthread_mutex_t *meal)
 			pthread_mutex_unlock(meal);
 			i++;
 		}
+		check_allright(index, meal);
 		if (index->dead)
 			break ;
-		check_allright(index, meal);
 		usleep(1000);
 	}
 }
