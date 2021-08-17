@@ -39,8 +39,12 @@ void	init_thread(t_table *index, pthread_mutex_t *print,
 void	count_down(int ring)
 {
 	int	time;
+	int	obj;
 
 	time = check_time();
+	obj = time + ring;
+	if (ring > 30)
+		usleep((ring - 30) * 1000);
 	while (1)
 	{
 		if (check_time() == time + ring)
