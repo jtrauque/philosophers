@@ -66,7 +66,7 @@ static int	think_opti(t_philo *philo)
 	if (check_on_life(philo->index->ready, &philo->index->dead, -1))
 		return (1);
 	time = check_time();
-	thinking_time = philo->index->time_die - (time - philo->last_meal) - 10 > 0;
+	thinking_time = philo->index->time_die - (time - philo->last_meal) - 10;
 	print(philo->id, philo, THINK);
 	if (thinking_time > 0)
 		usleep(thinking_time * 1000);
