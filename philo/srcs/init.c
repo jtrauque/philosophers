@@ -43,11 +43,9 @@ void	count_down(int ring)
 
 	time = check_time();
 	obj = time + ring;
-	if (ring > 30)
-		usleep((ring - 30) * 1000);
-	while (1)
-	{
-		if (check_time() == time + ring)
-			break ;
-	}
+	if (ring > 10)
+		usleep((ring - 10) * 1000);
+	printf("%d - spin lock\n", check_time());
+	while (check_time() < time + ring)
+		;
 }

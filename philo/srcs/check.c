@@ -74,7 +74,7 @@ void	check_allright(t_table *index, pthread_mutex_t *meal)
 	}
 	if (i == index->nbr_philo)
 	{
-		print(index->philo[i - 1].id, index->philo, END);
+		print(index->philo[i - 1].id, index->philo, END, 0);
 		index->allright = 1;
 		index->dead = 1;
 	}
@@ -94,7 +94,7 @@ void	check_death(t_table *index, pthread_mutex_t *meal)
 			pthread_mutex_lock(meal);
 			if (check_time() - index->philo[i].last_meal > index->time_die)
 			{
-				print(index->philo[i].id, index->philo, DEAD);
+				print(index->philo[i].id, index->philo, DEAD, 0);
 				index->dead = 1;
 			}
 			pthread_mutex_unlock(meal);
@@ -105,4 +105,5 @@ void	check_death(t_table *index, pthread_mutex_t *meal)
 			break ;
 		usleep(1000);
 	}
+	printf("%d - DEAD\n", __LINE__);
 }

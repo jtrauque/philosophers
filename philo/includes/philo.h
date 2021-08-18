@@ -57,23 +57,24 @@ typedef struct s_philo
 
 typedef struct s_table
 {
-	int		nbr_philo;
-	int		time_eat;
-	int		time_die;
-	int		time_sleep;
-	int		each_eat;
-	int		nbr_forks;
-	int		dead;
-	int		allright;
-	int		fail;
-	t_philo	*philo;
+	int			nbr_philo;
+	int			time_eat;
+	int			time_die;
+	int			time_sleep;
+	int			each_eat;
+	int			nbr_forks;
+	int			dead;
+	int			allright;
+	int			fail;
+	pthread_t	*th;
+	t_philo		*philo;
 }				t_table;
 
 /* TOOLS */
 int			ft_atoi_philo(char *str);
 void		ft_putstr_fd(char *str, int fd);
 int			check_time(void);
-void		print(int id, t_philo *philo, int action);
+void		print(int id, t_philo *philo, int action, int time);
 pthread_t	*malloc_thread(int nbr);
 
 /* THREAD */

@@ -65,16 +65,16 @@ pthread_t	*malloc_thread(int nbr)
 	return (th);
 }
 
-void	print(int id, t_philo *philo, int action)
+void	print(int id, t_philo *philo, int action, int time)
 {
 	pthread_mutex_lock(philo->print);
 	if (action == FORK)
 		printf("%d : Philosopher %d has taken a fork\n", check_time(), id);
 	else if (action == EAT)
 	{
-		printf("%d : Philosopher %d has taken a fork\n", check_time(), id);
-		printf("%d : Philosopher %d has taken a fork\n", check_time(), id);
-		printf("%d : Philosopher %d is eating\n", check_time(), id);
+		printf("%d : Philosopher %d has taken a fork\n", time, id);
+		printf("%d : Philosopher %d has taken a fork\n", time, id);
+		printf("%d : Philosopher %d is eating\n", time, id);
 	}
 	else if (action == SLEEP)
 	{

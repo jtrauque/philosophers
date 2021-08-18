@@ -18,16 +18,26 @@ void	release_fork(t_philo *philo)
 	check_mutex(&philo->right_fork.fork, &philo->right_fork.take, 0);
 }
 
-void	think_opti(t_philo *philo)
+static int	sleep_and_think(t_philo *philo)
 {
 	int	time;
 	int	thinking_time;
 
 	time = check_time();
-	thinking_time = philo->index->time_die - (time - philo->last_meal) - 10;
-	print(philo->id, philo, THINK);
+	count_down(philo->index->time_eat);
+	if (check_mutex(philo->ready, &philo->index->dead, -1) == FALSE)
+		return (1);
+	print(philo->id, philo, SLEEP, 0);
+	release_fork(philo);
+	count_down(philo->index->time_sleep);
+	if (check_mutex(philo->ready, &philo->index->dead, -1) == FALSE)
+		return (1);
+	/* thinking_time = philo->index->time_die - (time - philo->last_meal) - 30; */
+	thinking_time = (philo->last_meal + philo->index->time_eat * (1 + (philo->id % 2)) + philo->index->time_sleep) - check_time() - 10 * 1000;
+	print(philo->id, philo, THINK, time);
 	if (thinking_time > 0)
 		count_down(thinking_time);
+	return (0);
 }
 
 void	*routine(void *arg)
@@ -39,26 +49,27 @@ void	*routine(void *arg)
 	{
 		if (premission_to_left(philo->left_fork) == 0
 			|| premission_to_right(philo->left_fork, &philo->right_fork) == 0)
+		{
+			usleep(50);
 			continue ;
-		print(philo->id, philo, EAT);
-		check_mutex(philo->ready, &philo->nbr_meal, philo->nbr_meal + 1);
-		check_mutex(philo->ready, &philo->last_meal, check_time());
-		if (check_mutex(philo->ready, &philo->index->dead, -1))
-			return (0);
-		count_down(philo->index->time_eat);
-		if (check_mutex(philo->ready, &philo->index->dead, -1))
-			return (0);
-		print(philo->id, philo, SLEEP);
-		release_fork(philo);
-		count_down(philo->index->time_sleep);
-		if (check_mutex(philo->ready, &philo->index->dead, -1))
-			return (0);
-		think_opti(philo);
+		}
+		pthread_mutex_lock(philo->ready);
+		if (philo->index->dead == 1)
+		{
+			pthread_mutex_unlock(philo->ready);
+			break ;
+		}
+		philo->last_meal = check_time();
+		print(philo->id, philo, EAT, philo->last_meal);
+		philo->nbr_meal += 1;
+		pthread_mutex_unlock(philo->ready);
+		if (sleep_and_think(philo) == 1)
+			break ;
 	}
-	return (TRUE);
+	return (0);
 }
 
-int	end_of_simulation(t_table *index, pthread_t *th, pthread_mutex_t *print,
+int	end_of_simulation(t_table *index, pthread_mutex_t *print,
 		pthread_mutex_t *meal)
 {
 	int	i;
@@ -66,7 +77,7 @@ int	end_of_simulation(t_table *index, pthread_t *th, pthread_mutex_t *print,
 	i = 0;
 	while (i < index->fail)
 	{
-		if (pthread_join(th[i], NULL) != 0)
+		if (pthread_join(index->th[i], NULL) != 0)
 		{
 			ft_putstr_fd("Failed to join your thread", 2);
 			return (FALSE);
@@ -87,28 +98,28 @@ int	end_of_simulation(t_table *index, pthread_t *th, pthread_mutex_t *print,
 int	create_philo(t_table *index)
 {
 	int				i;
-	pthread_t		*th;
 	pthread_mutex_t	print_action;
 	pthread_mutex_t	meal;
 
 	i = 0;
-	th = malloc_thread(index->nbr_philo);
+	index->th = malloc_thread(index->nbr_philo);
 	init_thread(index, &print_action, &meal);
 	check_time();
 	while (i < index->nbr_philo)
 	{
-		if (pthread_create(&th[i], NULL, &routine, &index->philo[i]) != 0)
+		if (pthread_create(&index->th[i], NULL, &routine,
+				&index->philo[i]) != 0)
 		{
 			ft_putstr_fd("Failed to create thread", 2);
 			index->fail = i - 1;
-			end_of_simulation(index, th, &print_action, &meal);
-			free(th);
+			end_of_simulation(index, &print_action, &meal);
+			free(index->th);
 			return (FALSE);
 		}
 		i++;
 	}
 	check_death(index, &meal);
-	end_of_simulation(index, th, &print_action, &meal);
-	free(th);
+	end_of_simulation(index, &print_action, &meal);
+	free(index->th);
 	return (TRUE);
 }
